@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[DIGITAL VIEW] · Tasador Zona Norte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+:root{
+  --azul:#1B38E8; --lima:#CCFF00; --negro:#080A12; --texto:#0D0D0D;
+  --panel:#0E1018; --panel2:#12141F; --linea:#1E2230; --gris:#8A90A6; --gris2:#5A6075;
+  --blanco:#F4F6FB; --ok:#37D39B; --warn:#FFB020;
+  --syne:'Syne',sans-serif; --inter:'Inter',sans-serif; --mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--negro);color:var(--blanco);font-family:var(--inter);-webkit-font-smoothing:antialiased;line-height:1.5;overflow-x:hidden;
+  background-image:
+    radial-gradient(900px 500px at 85% -5%, rgba(27,56,232,.18), transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Ctext x='10' y='40' font-family='monospace' font-size='34' fill='%23CCFF00' fill-opacity='0.05'%3E%5B%5D%3C/text%3E%3Ctext x='62' y='95' font-family='monospace' font-size='34' fill='%23CCFF00' fill-opacity='0.05'%3E%5B%5D%3C/text%3E%3C/svg%3E");}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+nav{display:flex;align-items:center;justify-content:space-between;padding:26px 0;position:relative;z-index:5}
+.logo{font-family:var(--syne);font-weight:800;font-size:19px;letter-spacing:.12em;text-transform:uppercase}
+.logo b{color:var(--azul)}
+.nav-tag{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gris)}
+.hero{padding:40px 0 18px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:var(--lima);margin-bottom:18px;display:inline-block}
+.eyebrow::before{content:"[ ";color:var(--azul)} .eyebrow::after{content:" ]";color:var(--azul)}
+h1{font-family:var(--syne);font-weight:800;font-size:clamp(38px,5.8vw,68px);line-height:.98;letter-spacing:-.02em;max-width:15ch}
+h1 .hl{color:var(--azul)}
+.sub{margin-top:20px;font-size:17px;color:#C3C8D8;max-width:58ch;line-height:1.55}
+.sub b{color:var(--blanco);font-weight:600}
+
+.tool{display:grid;grid-template-columns:1.05fr 1fr;gap:24px;margin:40px 0 24px;align-items:start}
+.card{background:var(--panel);border:1px solid var(--linea);border-radius:18px;padding:28px}
+.card-form{box-shadow:10px 10px 0 rgba(27,56,232,.9)}
+.card-head{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.card-head .n{font-family:var(--mono);font-size:12px;color:var(--negro);background:var(--lima);padding:2px 8px;border-radius:5px;font-weight:700}
+.card-title{font-family:var(--syne);font-weight:700;font-size:20px}
+.card-desc{color:var(--gris);font-size:13px;margin-bottom:20px}
+
+.sec-label{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--lima);margin:20px 0 12px;display:block}
+.sec-label:first-of-type{margin-top:4px}
+.field{margin-bottom:14px}
+.field label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);margin-bottom:6px}
+.field label .req{color:var(--azul)}
+.field .hint{color:var(--gris2);text-transform:none;letter-spacing:0;font-family:var(--inter)}
+input,select{width:100%;background:var(--panel2);border:1px solid var(--linea);border-radius:10px;color:var(--blanco);
+  font-family:var(--inter);font-size:15px;padding:11px 12px;outline:none;transition:border-color .15s,box-shadow .15s}
+input::placeholder{color:var(--gris2)}
+input:focus,select:focus{border-color:var(--azul);box-shadow:0 0 0 3px rgba(27,56,232,.22)}
+.invalid{border-color:#E0445B!important;box-shadow:0 0 0 3px rgba(224,68,91,.18)!important}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238A90A6' stroke-width='1.6' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:32px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px}
+
+/* geolocalizador */
+.geo-wrap{position:relative}
+#sugs{position:absolute;top:100%;left:0;right:0;background:var(--panel2);border:1px solid var(--azul);border-radius:0 0 10px 10px;z-index:30;max-height:210px;overflow:auto;display:none}
+#sugs div{padding:10px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--linea);color:#C3C8D8}
+#sugs div:hover{background:rgba(27,56,232,.18);color:#fff}
+#map{height:200px;border-radius:12px;margin-top:10px;border:1px solid var(--linea);background:var(--panel2)}
+.geo-meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--gris)}
+.geo-meta .coord{color:var(--ok)}
+.zona-badge{display:flex;justify-content:space-between;align-items:center;background:var(--panel2);border:1px dashed var(--linea);border-radius:10px;padding:11px 13px;margin-bottom:14px}
+.zona-badge .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gris)}
+.zona-badge .v{font-family:var(--mono);font-weight:700;font-size:16px;color:var(--lima)}
+
+/* toggle barrio cerrado */
+.toggle{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;margin-bottom:6px}
+.toggle .sw{width:42px;height:24px;background:var(--panel2);border:1px solid var(--linea);border-radius:20px;position:relative;transition:.2s;flex:none}
+.toggle .sw::after{content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:var(--gris);top:2px;left:2px;transition:.2s}
+.toggle.on .sw{background:rgba(27,56,232,.25);border-color:var(--azul)}
+.toggle.on .sw::after{left:21px;background:var(--azul)}
+.toggle span{font-size:13.5px;color:#C3C8D8}
+.bc-extra{max-height:0;overflow:hidden;transition:max-height .3s}.bc-extra.open{max-height:200px}
+
+/* fotos */
+.drop{border:1.5px dashed var(--linea);border-radius:12px;padding:22px;text-align:center;cursor:pointer;transition:.15s;background:var(--panel2)}
+.drop:hover{border-color:var(--azul);background:rgba(27,56,232,.06)}
+.drop .ic{font-family:var(--mono);font-size:24px;color:var(--azul)}
+.drop p{font-size:13px;color:var(--gris);margin-top:6px}
+.drop p b{color:#C3C8D8}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.thumbs .t{width:62px;height:62px;border-radius:9px;object-fit:cover;border:1px solid var(--linea)}
+.btn-ghost{margin-top:10px;width:100%;background:transparent;border:1px solid var(--azul);color:#9DB0FF;border-radius:10px;
+  font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:11px;cursor:pointer;transition:.15s}
+.btn-ghost:hover{background:rgba(27,56,232,.12);color:#fff}
+.ia-out{margin-top:10px;font-size:12.5px;color:var(--gris);line-height:1.5;border-left:2px solid var(--azul);padding-left:10px;display:none}
+
+.btn{width:100%;margin-top:18px;background:var(--lima);color:var(--negro);border:none;border-radius:11px;
+  font-family:var(--syne);font-weight:800;font-size:16px;letter-spacing:.02em;padding:15px;cursor:pointer;
+  text-transform:uppercase;transition:transform .12s,box-shadow .12s;box-shadow:6px 6px 0 var(--azul)}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--azul)}
+.btn:active{transform:translate(2px,2px);box-shadow:3px 3px 0 var(--azul)}
+.form-warn{color:#E0445B;font-size:12.5px;margin-top:10px;display:none}
+
+.card-res{background:linear-gradient(180deg,#0E1018,#0B0D15);border:1px solid var(--linea);position:sticky;top:18px;box-shadow:10px 10px 0 rgba(204,255,0,.16)}
+.res-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gris);margin-bottom:8px}
+.res-big{font-family:var(--syne);font-weight:800;font-size:clamp(32px,4.4vw,50px);line-height:1;letter-spacing:-.01em}
+.res-big .cur{color:var(--lima);font-size:.5em;vertical-align:super;margin-right:4px}
+.res-line{height:1px;background:var(--linea);margin:20px 0}
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.res-cell .k{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);margin-bottom:4px}
+.res-cell .v{font-family:var(--mono);font-weight:500;font-size:16px}
+.res-cell .v.az{color:#7B93FF}.res-cell .v.li{color:var(--lima)}
+.desglose{margin-top:18px;background:rgba(255,255,255,.02);border:1px solid var(--linea);border-radius:11px;padding:13px 15px}
+.desglose h4{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gris);margin-bottom:9px}
+.dl{display:flex;justify-content:space-between;font-size:12px;padding:3.5px 0;border-bottom:1px dashed rgba(255,255,255,.05)}
+.dl:last-child{border-bottom:none}.dl span:first-child{color:var(--gris)}.dl span:last-child{font-family:var(--mono)}
+.res-empty{color:var(--gris2);font-size:14px;text-align:center;padding:48px 10px;line-height:1.6}
+.res-empty .ic{font-family:var(--mono);font-size:30px;color:var(--linea);display:block;margin-bottom:12px}
+.fade{animation:fade .35s ease}@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.disc{font-size:11px;color:var(--gris2);margin-top:16px;line-height:1.5}
+
+/* comparables */
+.comp-sec{margin:14px 0 36px}
+.comp-sec h2{font-family:var(--syne);font-weight:800;font-size:26px;margin-bottom:6px}
+.comp-sec .csub{color:var(--gris);font-size:14px;margin-bottom:18px}
+.comp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.comp{background:var(--panel);border:1px solid var(--linea);border-radius:14px;padding:16px;transition:.15s}
+.comp:hover{border-color:var(--azul);transform:translateY(-2px)}
+.comp .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.comp .portal{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--negro);background:var(--lima);padding:2px 7px;border-radius:5px;font-weight:700}
+.comp .sim{font-family:var(--mono);font-size:10px;color:var(--ok)}
+.comp .dir{font-family:var(--syne);font-weight:700;font-size:15px;margin-bottom:3px}
+.comp .meta{font-size:12px;color:var(--gris);margin-bottom:10px}
+.comp .price{font-family:var(--syne);font-weight:800;font-size:20px;color:var(--blanco)}
+.comp .m2{font-family:var(--mono);font-size:11px;color:#7B93FF;margin-top:2px}
+.comp a{display:inline-block;margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--lima);text-decoration:none;border-bottom:1px solid transparent}
+.comp a:hover{border-color:var(--lima)}
+.comp-empty{grid-column:1/-1;text-align:center;padding:34px;border:1px dashed var(--linea);border-radius:14px;color:var(--gris)}
+.comp-empty b{color:#C3C8D8} .comp-empty .lnk{color:var(--lima);cursor:pointer;text-decoration:underline}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin:24px 0}
+.step{border-top:2px solid var(--azul);padding-top:14px}
+.step .num{font-family:var(--mono);font-size:12px;color:var(--lima)}
+.step h3{font-family:var(--syne);font-weight:700;font-size:16px;margin:5px 0}
+.step p{color:var(--gris);font-size:13px;line-height:1.55}
+.phase{margin:18px 0 36px;background:var(--panel);border:1px solid var(--linea);border-radius:16px;padding:22px 26px}
+.phase .tag{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--negro);background:var(--lima);padding:4px 9px;border-radius:6px;font-weight:700;display:inline-block;margin-bottom:12px}
+.phase h3{font-family:var(--syne);font-weight:700;font-size:17px;margin-bottom:8px}
+.phase p{color:var(--gris);font-size:13.5px;line-height:1.6}.phase b{color:#C3C8D8}
+.phase code{font-family:var(--mono);font-size:12px;color:var(--lima);background:var(--panel2);padding:1px 6px;border-radius:4px}
+footer{border-top:1px solid var(--linea);padding:28px 0 50px;color:var(--gris2);font-size:12px;line-height:1.7}
+footer .logo{font-size:15px;margin-bottom:10px}
+@media(max-width:880px){.tool{grid-template-columns:1fr}.card-res{position:relative;top:0}.steps,.comp-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <div class="logo">[<b>DIGITAL VIEW</b>]</div>
+    <div class="nav-tag">Tasador · Zona Norte GBA</div>
+  </nav>
+
+  <header class="hero">
+    <span class="eyebrow">DV Tasaciones · Comparativo de mercado</span>
+    <h1>¿Cuánto vale tu <span class="hl">propiedad</span>?</h1>
+    <p class="sub">Geolocalizás la dirección exacta y cargás los datos clave. El motor resuelve la micro-zona y el valor de m², homogeneiza, deprecia por estado y antigüedad, <b>busca 6 comparables reales del barrio</b> y te devuelve el rango.</p>
+  </header>
+
+  <section class="tool">
+    <!-- ============ FORM ============ -->
+    <div class="card card-form">
+      <div class="card-head"><span class="n">01</span><span class="card-title">Cargá tu propiedad</span></div>
+      <p class="card-desc">Todos los campos son obligatorios para tasar y traer comparables.</p>
+
+      <span class="sec-label">Ubicación</span>
+      <div class="field geo-wrap">
+        <label>Dirección <span class="req">*</span> <span class="hint">/ el mapa fija el punto exacto</span></label>
+        <input id="dir" type="text" autocomplete="off" placeholder="Ej: Lavardén 429, Acassuso">
+        <div id="sugs"></div>
+      </div>
+      <div id="map"></div>
+      <div class="geo-meta"><span id="geostatus">Escribí una dirección o tocá el mapa</span><span class="coord" id="coord">—</span></div>
+
+      <div class="zona-badge" style="margin-top:14px">
+        <div><span class="k">Micro-zona detectada</span></div>
+        <div class="v" id="zonaName">—</div>
+      </div>
+      <div class="field">
+        <label>Micro-zona <span class="hint">/ ajustá si hace falta</span></label>
+        <select id="zona"></select>
+      </div>
+      <div class="zona-badge">
+        <div><span class="k">USD/m² de referencia (resuelto por el sistema)</span></div>
+        <div class="v" id="m2ref">—</div>
+      </div>
+
+      <div class="toggle" id="bcToggle" style="margin-top:4px"><div class="sw"></div><span>¿Es un barrio cerrado / country / náutico?</span></div>
+      <div class="bc-extra" id="bcExtra"><div style="padding-top:12px">
+        <div class="field"><label>Barrio cerrado</label>
+          <select id="bcName"></select>
+        </div>
+      </div></div>
+
+      <span class="sec-label">Características</span>
+      <div class="row">
+        <div class="field"><label>Tipología <span class="req">*</span></label>
+          <select id="tipo"><option value="casa">Casa</option><option value="depto">Departamento</option><option value="ph">PH</option></select></div>
+        <div class="field"><label>Sup. cubierta m² <span class="req">*</span></label><input id="cub" type="number" min="0" placeholder="288"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Sup. descubierta m² <span class="hint">/ jardín, terraza</span></label><input id="desc" type="number" min="0" placeholder="0"></div>
+        <div class="field"><label>Lote / terreno m² <span class="hint">/ casas y countries</span></label><input id="lote" type="number" min="0" placeholder="432"></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label>Amb. <span class="req">*</span></label><input id="amb" type="number" min="0" placeholder="6"></div>
+        <div class="field"><label>Dorm. <span class="req">*</span></label><input id="dorm" type="number" min="0" placeholder="3"></div>
+        <div class="field"><label>Baños <span class="req">*</span></label><input id="ban" type="number" min="0" placeholder="3"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Antigüedad <span class="req">*</span></label>
+          <select id="antig">
+            <option value="">Elegí…</option>
+            <option value="estrenar">A estrenar / 0–5 años</option>
+            <option value="reciente">6–15 años</option>
+            <option value="media">16–30 años</option>
+            <option value="antigua">31–50 años</option>
+            <option value="muyantigua">+50 años</option>
+          </select></div>
+        <div class="field"><label>Estado <span class="req">*</span></label>
+          <select id="estado">
+            <option value="">Elegí…</option>
+            <option value="refaccionar">A refaccionar</option>
+            <option value="bueno">Bueno</option>
+            <option value="muybueno">Muy bueno</option>
+            <option value="excelente">Excelente</option>
+            <option value="estrenar">A estrenar</option>
+          </select></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Categoría constructiva <span class="req">*</span></label>
+          <select id="cat"><option value="">Elegí…</option><option value="economica">Económica</option><option value="standard">Standard</option><option value="buena">Buena</option><option value="premium">Premium</option></select></div>
+        <div class="field"><label>Amenities</label>
+          <div class="row3" style="gap:6px">
+            <select id="coch" title="Cochera"><option value="0">Sin coch.</option><option value="1">Cochera</option></select>
+            <select id="pile" title="Pileta"><option value="0">Sin pileta</option><option value="1">Pileta</option></select>
+            <select id="parr" title="Parrilla"><option value="0">Sin parrilla</option><option value="1">Parrilla</option></select>
+          </div></div>
+      </div>
+
+      <span class="sec-label">Fotos de la propiedad</span>
+      <div class="drop" id="drop">
+        <div class="ic">[ + ]</div>
+        <p><b>Subí fotos</b> de la propiedad (fachada, ambientes, exterior)</p>
+        <p style="font-size:11px">La IA de visión las analiza para estimar estado, calidad y categoría.</p>
+      </div>
+      <input type="file" id="files" accept="image/*" multiple style="display:none">
+      <div class="thumbs" id="thumbs"></div>
+      <button class="btn-ghost" id="analizar" style="display:none">Analizar fotos con IA →</button>
+      <div class="ia-out" id="iaOut"></div>
+
+      <button class="btn" id="tasar">Tasar + buscar comparables</button>
+      <div class="form-warn" id="warn">Faltan campos obligatorios (marcados con *) o falta fijar la dirección en el mapa.</div>
+    </div>
+
+    <!-- ============ RESULT ============ -->
+    <div class="card card-res">
+      <div class="card-head"><span class="n">02</span><span class="card-title">Resultado</span></div>
+      <div id="result">
+        <div class="res-empty"><span class="ic">[ ]</span>Completá los datos, fijá la dirección en el mapa y tocá <b style="color:var(--gris)">Tasar</b>.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ COMPARABLES ============ -->
+  <section class="comp-sec">
+    <h2>Las 6 propiedades con las que comparamos</h2>
+    <p class="csub">Buscadas por cercanía geográfica y características en Zonaprop, MercadoLibre, Argenprop, Remax y ZipCode.</p>
+    <div class="comp-grid" id="compGrid">
+      <div class="comp-empty">Tasá una propiedad para traer los comparables. <br><br><b>Modo demo:</b> <span class="lnk" id="demoLink">ver ejemplo real con casas de Barrio Parque Aguirre →</span></div>
+    </div>
+  </section>
+
+  <section class="steps">
+    <div class="step"><div class="num">[ 01 ]</div><h3>Geolocalizás</h3><p>La dirección se fija con un punto exacto en el mapa. El sistema resuelve la micro-zona y su valor de m².</p></div>
+    <div class="step"><div class="num">[ 02 ]</div><h3>El motor calcula</h3><p>Homogeneiza superficie, deprecia por estado y antigüedad (Ross-Heidecke), pondera atributos y castiga la oferta.</p></div>
+    <div class="step"><div class="num">[ 03 ]</div><h3>Comparables + rango</h3><p>Trae 6 propiedades reales del barrio y devuelve publicación sugerida, rango competitivo y cierre probable.</p></div>
+  </section>
+
+  <section class="phase">
+    <span class="tag">Fase 2 · backend</span>
+    <h3>Comparables en vivo y análisis de fotos</h3>
+    <p>La búsqueda real de comparables y el análisis de fotos con IA corren en el <b>backend de DV</b> (no se pueden hacer dentro de esta página por restricciones de los portales y de la API de visión). Apuntá la constante <code>API_BASE</code> del script al servicio desplegado (FastAPI + Apify + Claude visión) y la sección de comparables y el botón de fotos pasan a datos en vivo. Mientras tanto, el tasador funciona con las tablas de referencia y el modo demo muestra comparables reales de ejemplo.</p>
+  </section>
+
+  <footer>
+    <div class="logo">[<b>DIGITAL VIEW</b>]</div>
+    Tasación orientativa de comercialización. No reemplaza la tasación presencial de un corredor público inmobiliario matriculado.
+    Corredor responsable: [Matrícula CMCPSI / CUCICBA a completar]. Valores de m² de referencia 2025/26 — calibrables con cierres reales de DV.
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+/* ===================================================================
+   MOTOR DE TASACIÓN · DV — v2
+   API_BASE: URL del backend de Fase 2 (comparables + fotos). Vacío = modo demo.
+   =================================================================== */
+const API_BASE = ""; // ej: "https://dv-tasador.onrender.com"
+
+const PARAMS = {
+  // USD/m² de referencia por micro-zona (oferta deptos, 2025/26). CALIBRAR con cierres reales DV.
+  // Corredor entre Panamericana y el Río, de Puerto Madero a Puertos del Lago.
+  zonas: {
+    "Puerto Madero":5800,"Retiro":2600,"Recoleta":2459,"Barrio Norte":2500,"Palermo":2631,
+    "Las Cañitas":2700,"Belgrano":2526,"Colegiales":2334,"Núñez":2569,"Saavedra":1850,
+    "Vicente López (centro)":2700,"Olivos":2900,"La Lucila":3300,"Florida":2100,"Florida Oeste":1750,
+    "Munro":1850,"Carapachay":1700,"Villa Martelli":1600,"Villa Adelina":1900,
+    "San Isidro (casco)":2900,"Acassuso":2900,"Martínez":2500,"Beccar":2000,"Boulogne":1700,
+    "Las Lomas de San Isidro":2600,"La Horqueta":2300,
+    "San Fernando":1500,"Victoria":1700,"Virreyes":1300,
+    "Tigre (centro)":1900,"Rincón de Milberg":2100,"Nordelta":2500,"Benavídez":1700,
+    "General Pacheco":1700,"Don Torcuato":1700,"El Talar":1450,"Dique Luján / Villa La Ñata":1800,
+    "Belén de Escobar":1400,"Ingeniero Maschwitz":1600,"Puertos del Lago":2400,"El Cantón":2200,
+    "Otra (Zona Norte)":2000
+  },
+  // alias para matchear el geocoder con las claves de arriba
+  alias:{ "vicente lopez":"Vicente López (centro)","san isidro":"San Isidro (casco)","tigre":"Tigre (centro)",
+    "escobar":"Belén de Escobar","maschwitz":"Ingeniero Maschwitz","ingeniero maschwitz":"Ingeniero Maschwitz",
+    "puertos":"Puertos del Lago","villa la nata":"Dique Luján / Villa La Ñata","general pacheco":"General Pacheco",
+    "don torcuato":"Don Torcuato","la lucila":"La Lucila","rincon de milberg":"Rincón de Milberg" },
+  barriosCerrados:["Nordelta","Puertos del Lago","El Cantón","Santa Bárbara","Villa Nueva (Tigre)","San Isidro Labrador",
+    "Santa María de Tigre","Boating Club","El Naudir","Septiembre","Albanueva","Los Castores","Talar del Lago","Otro country"],
+  // USD/m² de CASAS (oferta) por barrio donde ya tenemos dato real. Anclado con cierres/avisos reales.
+  // La Lucila: aviso real Díaz Vélez 480k / 191 m² ≈ 2.500. Acassuso: promedio comparables B° Parque Aguirre.
+  casaBaseOverride:{ "La Lucila":2400, "Acassuso":2000 },
+  factorCasaDefault:0.72,   // barrios sin dato propio de casas todavía: casa ≈ 72% del valor depto. CALIBRAR.
+  factorPH:0.88,
+  sup:{ cubierta:1.00, descubierta:0.05 },               // descubierta pesa poco: el valor de casa ya incluye el lote
+  antig:{ estrenar:1.00, reciente:0.99, media:0.97, antigua:0.93, muyantigua:0.88 },
+  estado:{ refaccionar:0.85, bueno:0.93, muybueno:1.00, excelente:1.04, estrenar:1.07 },
+  categoria:{ economica:0.95, standard:1.00, buena:1.03, premium:1.07 },
+  // amenities chicos: la oferta de mercado YA incluye casas con pileta/parrilla, no se premia de nuevo
+  amenities:{ cochera:0.005, pileta:0.012, parrilla:0.004 },
+  barrioCerradoCoef:1.04,
+  cierre:{ min:0.88, max:0.93 }                           // cierre = 7-12% por debajo del valor de publicación
+};
+
+const $=id=>document.getElementById(id);
+const fmt=n=>"$"+Math.round(n).toLocaleString("es-AR");
+const r5=n=>Math.round(n/5000)*5000;
+let LAT=null,LON=null,fotos=[];
+
+/* ---- poblar selects ---- */
+const zsel=$("zona");
+zsel.innerHTML='<option value="">Detectá o elegí…</option>';
+Object.keys(PARAMS.zonas).forEach(z=>{const o=document.createElement("option");o.value=z;o.textContent=z;zsel.appendChild(o);});
+PARAMS.barriosCerrados.forEach(b=>{const o=document.createElement("option");o.value=b;o.textContent=b;$("bcName").appendChild(o);});
+function resolveBase(z,tipo){
+  if(!z||!PARAMS.zonas[z])return null;
+  if(tipo==="casa")return PARAMS.casaBaseOverride[z]||Math.round(PARAMS.zonas[z]*PARAMS.factorCasaDefault);
+  if(tipo==="ph")return Math.round(PARAMS.zonas[z]*PARAMS.factorPH);
+  return PARAMS.zonas[z];
+}
+function refreshM2(){
+  const z=zsel.value, tipo=$("tipo").value, b=resolveBase(z,tipo);
+  const lbl={casa:"casas",depto:"deptos",ph:"PH"}[tipo]||"";
+  $("m2ref").textContent=b?"USD "+b.toLocaleString("es-AR")+"/m² ("+lbl+")":"—";
+}
+zsel.addEventListener("change",refreshM2);
+
+/* ---- MAPA (Leaflet + OpenStreetMap, sin API key) ---- */
+let map,marker;
+try{
+  map=L.map("map",{zoomControl:true}).setView([-34.47,-58.52],11);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(map);
+  map.on("click",e=>setPoint(e.latlng.lat,e.latlng.lng,true));
+}catch(e){ $("geostatus").textContent="Mapa no disponible en este entorno"; }
+
+function setPoint(lat,lon,reverse){
+  LAT=lat;LON=lon;
+  if(marker)marker.setLatLng([lat,lon]); else if(map)marker=L.marker([lat,lon]).addTo(map);
+  if(map)map.setView([lat,lon],16);
+  $("coord").textContent=lat.toFixed(5)+", "+lon.toFixed(5);
+  $("geostatus").textContent="Punto fijado";
+  if(reverse) reverseZona(lat,lon);
+}
+function matchZona(txt){
+  if(!txt)return null; const t=txt.toLowerCase();
+  for(const k of Object.keys(PARAMS.zonas)){ if(t.includes(k.toLowerCase().split(" (")[0]))return k; }
+  for(const a of Object.keys(PARAMS.alias)){ if(t.includes(a))return PARAMS.alias[a]; }
+  return null;
+}
+async function reverseZona(lat,lon){
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&accept-language=es`);
+    const d=await r.json(); const a=d.address||{};
+    const cand=[a.suburb,a.neighbourhood,a.quarter,a.city_district,a.town,a.village,a.city,a.municipality].filter(Boolean).join(" ");
+    const z=matchZona(cand);
+    $("zonaName").textContent=cand||"—";
+    if(z){zsel.value=z;refreshM2();} 
+  }catch(e){ $("zonaName").textContent="(elegí la micro-zona manualmente)"; }
+}
+/* autocomplete de dirección */
+let tmr;
+$("dir").addEventListener("input",function(){
+  clearTimeout(tmr); const q=this.value.trim();
+  if(q.length<3){$("sugs").style.display="none";return;}
+  tmr=setTimeout(async()=>{
+    try{
+      const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=ar&limit=6&addressdetails=1&accept-language=es&viewbox=-58.85,-34.85,-58.25,-34.15&q=${encodeURIComponent(q)}`);
+      const d=await r.json(); const box=$("sugs"); box.innerHTML="";
+      if(!d.length){box.style.display="none";return;}
+      const aplicar=it=>{setPoint(parseFloat(it.lat),parseFloat(it.lon),false);
+        $("zonaName").textContent=it.display_name.split(",").slice(0,3).join(", ");
+        const z=matchZona(it.display_name); if(z){zsel.value=z;refreshM2();} else reverseZona(parseFloat(it.lat),parseFloat(it.lon));};
+      aplicar(d[0]);                       // marca solo el mejor resultado en el mapa
+      d.forEach(it=>{const el=document.createElement("div");el.textContent=it.display_name;
+        el.onclick=()=>{$("dir").value=it.display_name;box.style.display="none";aplicar(it);}; box.appendChild(el);});
+      box.style.display="block";
+    }catch(e){$("geostatus").textContent="Autocompletado no disponible — fijá el punto tocando el mapa";}
+  },350);
+});
+document.addEventListener("click",e=>{ if(!e.target.closest(".geo-wrap"))$("sugs").style.display="none"; });
+
+/* ---- barrio cerrado ---- */
+$("bcToggle").addEventListener("click",()=>{$("bcToggle").classList.toggle("on");$("bcExtra").classList.toggle("open");});
+
+/* ---- fotos ---- */
+$("drop").addEventListener("click",()=>$("files").click());
+$("files").addEventListener("change",e=>{
+  fotos=[...e.target.files]; const t=$("thumbs"); t.innerHTML="";
+  fotos.forEach(f=>{const img=document.createElement("img");img.className="t";img.src=URL.createObjectURL(f);t.appendChild(img);});
+  $("analizar").style.display=fotos.length?"block":"none";
+});
+$("analizar").addEventListener("click",async()=>{
+  const out=$("iaOut"); out.style.display="block";
+  if(!API_BASE){ out.innerHTML="El análisis de fotos con IA corre en el <b>backend de DV</b> (Fase 2). Conectá <b>API_BASE</b> con tu servicio de Render y cargá ahí <b>ANTHROPIC_API_KEY</b> para que lea estado, calidad y categoría desde las imágenes."; return; }
+  out.textContent="Analizando fotos…";
+  try{
+    const fd=new FormData(); fotos.forEach(f=>fd.append("fotos",f));
+    const r=await fetch(API_BASE+"/analizar-fotos",{method:"POST",body:fd}); const d=await r.json();
+    if(d.estado||d.categoria){
+      if(d.estado)$("estado").value=d.estado; if(d.categoria)$("cat").value=d.categoria;
+      out.innerHTML=`<b>Lectura IA:</b> estado <b>${d.estado||"—"}</b> · categoría <b>${d.categoria||"—"}</b>. ${d.observaciones||""}`;
+      if(document.querySelector(".res-big")){const rr=calc();if(rr)render(rr);}
+    } else {
+      out.innerHTML="El backend respondió sin lectura. Revisá que <b>ANTHROPIC_API_KEY</b> esté cargada en Render y que el deploy esté arriba."+(d.error?" ("+d.error+")":"");
+    }
+  }catch(e){ out.innerHTML="No se pudo conectar con el backend de fotos. Revisá la URL de <b>API_BASE</b> y que el servicio esté corriendo."; }
+});
+
+/* ---- validación + cálculo ---- */
+const REQ=["cub","amb","dorm","ban","antig","estado","cat"];
+function valid(){
+  let ok=true;
+  REQ.forEach(id=>{const el=$(id);const empty=!el.value;el.classList.toggle("invalid",empty);if(empty)ok=false;});
+  if(!zsel.value){zsel.classList.add("invalid");ok=false;}else zsel.classList.remove("invalid");
+  if(LAT===null){$("dir").classList.add("invalid");ok=false;}else $("dir").classList.remove("invalid");
+  return ok;
+}
+function calc(){
+  const z=zsel.value, tipo=$("tipo").value, base=resolveBase(z,tipo); if(!base)return null;
+  const cub=+$("cub").value||0, desc=+$("desc").value||0; if(cub<=0)return null;
+  const supH=cub*PARAMS.sup.cubierta+desc*PARAMS.sup.descubierta;
+  const cA=PARAMS.antig[$("antig").value],cE=PARAMS.estado[$("estado").value],cC=PARAMS.categoria[$("cat").value];
+  let cAtr=1+(+$("coch").value?PARAMS.amenities.cochera:0)+(+$("pile").value?PARAMS.amenities.pileta:0)+(+$("parr").value?PARAMS.amenities.parrilla:0);
+  const bc=$("bcToggle").classList.contains("on"); const cBC=bc?PARAMS.barrioCerradoCoef:1;
+  const m2aj=base*cA*cE*cC*cAtr*cBC;
+  const est=supH*m2aj, pub=r5(est);
+  return {z,tipo,base,supH,cA,cE,cC,cAtr,cBC,bc,m2aj,est,pub,
+    compL:r5(pub*0.97),compH:r5(pub*1.03),ciL:r5(est*PARAMS.cierre.min),ciH:r5(est*PARAMS.cierre.max),m2i:pub/supH};
+}
+function render(r){
+  $("result").innerHTML=`<div class="fade">
+    <div class="res-eyebrow">Valor de publicación sugerido</div>
+    <div class="res-big"><span class="cur">USD</span>${Math.round(r.pub).toLocaleString("es-AR")}</div>
+    <div class="res-line"></div>
+    <div class="res-grid">
+      <div class="res-cell"><div class="k">Rango competitivo</div><div class="v az">${fmt(r.compL)} – ${fmt(r.compH)}</div></div>
+      <div class="res-cell"><div class="k">Cierre probable</div><div class="v li">${fmt(r.ciL)} – ${fmt(r.ciH)}</div></div>
+      <div class="res-cell"><div class="k">USD/m² implícito</div><div class="v">${Math.round(r.m2i).toLocaleString("es-AR")}</div></div>
+      <div class="res-cell"><div class="k">Sup. homogeneizada</div><div class="v">${r.supH.toLocaleString("es-AR")} m²</div></div>
+    </div>
+    <div class="desglose"><h4>Cómo se llegó al número</h4>
+      <div class="dl"><span>USD/m² base · ${r.z} (${r.tipo})</span><span>${r.base.toLocaleString("es-AR")}</span></div>
+      <div class="dl"><span>× Antigüedad / Estado</span><span>${r.cA.toFixed(2)} · ${r.cE.toFixed(2)}</span></div>
+      <div class="dl"><span>× Categoría / Atributos${r.bc?" / B° cerrado":""}</span><span>${r.cC.toFixed(2)} · ${r.cAtr.toFixed(2)}${r.bc?" · "+r.cBC.toFixed(2):""}</span></div>
+      <div class="dl"><span>= USD/m² ajustado</span><span>${Math.round(r.m2aj).toLocaleString("es-AR")}</span></div>
+      <div class="dl"><span>× Sup. homogeneizada</span><span>${r.supH.toLocaleString("es-AR")} m²</span></div>
+      <div class="dl"><span>= Valor de publicación estimado</span><span>${fmt(r.est)}</span></div>
+    </div>
+    <p class="disc">Orientativo. La oferta publicada suele estar 5–15% sobre el cierre real. No reemplaza la tasación de un corredor matriculado.</p></div>`;
+}
+
+/* comparables reales de ejemplo (Barrio Parque Aguirre · relevados 08/06/2026) */
+const DEMO=[
+ {portal:"MercadoLibre",dir:"Labardén 400",meta:"378 m² cub · 9 amb · 4 baños",price:"US$ 730.000",m2:"1.931 USD/m²",sim:"sim. 94%",link:"https://inmuebles.mercadolibre.com.ar/casas/venta/bsas-gba-norte/san-isidro/acassuso/"},
+ {portal:"MercadoLibre",dir:"Guido Spano 200",meta:"310 m² cub · 5 amb · 4 baños",price:"US$ 650.000",m2:"2.097 USD/m²",sim:"sim. 90%",link:"https://inmuebles.mercadolibre.com.ar/casas/venta/bsas-gba-norte/san-isidro/acassuso/"},
+ {portal:"Zonaprop",dir:"Estrada 786",meta:"380 m² cub · 5 amb · 4 baños · 2 coch",price:"US$ 580.000",m2:"1.526 USD/m²",sim:"sim. 86%",link:"https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-barrio-parque-aguirre-estrada-786-acassuso-41685379.html"},
+ {portal:"Zonaprop",dir:"Olegario Andrade 400",meta:"480 m² · 9 amb · 3 baños · 2 coch",price:"US$ 680.000",m2:"1.417 USD/m²",sim:"sim. 80%",link:"https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-gran-oportunidad-en-la-mejor-zona-de-acassuso-barrio-57897477.html"},
+ {portal:"Zonaprop",dir:"Roque Sáenz Peña 100",meta:"720 m² · 9 amb · 7 dorm · 5 baños",price:"US$ 600.000",m2:"s/sup. cub.",sim:"sim. 74%",link:"https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-excelente-casa-en-barrio-parque-aguirre7-lote-apto-47711605.html"},
+ {portal:"Zonaprop",dir:"Estanislao del Campo 300",meta:"436 m² cub · lote 1.145 · premium",price:"US$ 1.380.000",m2:"3.165 USD/m²",sim:"sim. 68%",link:"https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-7-amb.-acassuso-barrio-aguirre-parque-pileta-59236156.html"}
+];
+function renderComps(list,demo){
+  const g=$("compGrid"); g.innerHTML="";
+  if(demo){const n=document.createElement("div");n.className="comp-empty";n.style.gridColumn="1/-1";n.style.marginBottom="2px";
+    n.innerHTML="<b>Modo demo</b> — comparables reales de Barrio Parque Aguirre (ejemplo). Con el backend de Fase 2 conectado, se traen por la ubicación exacta de cada tasación.";g.appendChild(n);}
+  list.forEach(c=>{const d=document.createElement("div");d.className="comp";
+    d.innerHTML=`<div class="top"><span class="portal">${c.portal}</span><span class="sim">${c.sim||""}</span></div>
+      <div class="dir">${c.dir}</div><div class="meta">${c.meta}</div>
+      <div class="price">${c.price}</div><div class="m2">${c.m2}</div>
+      <a href="${c.link}" target="_blank">ver aviso →</a>`;g.appendChild(d);});
+}
+$("demoLink").addEventListener("click",()=>renderComps(DEMO,true));
+
+async function buscarComparables(r){
+  if(!API_BASE){ renderComps(DEMO,true); return; }
+  $("compGrid").innerHTML='<div class="comp-empty">Buscando comparables por cercanía…</div>';
+  try{
+    const q=new URLSearchParams({lat:LAT,lon:LON,tipologia:$("tipo").value,cubierta:$("cub").value,amb:$("amb").value});
+    const res=await fetch(API_BASE+"/comparables?"+q.toString()); const d=await res.json();
+    const list=(d.comparables||[]).slice(0,6);
+    if(list.length) renderComps(list,false);
+    else renderComps(DEMO,true);   // backend arriba pero sin resultados (revisá actores de Apify)
+  }catch(e){ renderComps(DEMO,true); }
+}
+
+$("tasar").addEventListener("click",()=>{
+  if(!valid()){ $("warn").style.display="block"; return; }
+  $("warn").style.display="none";
+  const r=calc(); if(!r)return; render(r); buscarComparables(r);
+  document.querySelector(".comp-sec").scrollIntoView({behavior:"smooth",block:"start"});
+});
+["zona","tipo","cub","desc","lote","amb","dorm","ban","antig","estado","cat","coch","pile","parr"].forEach(id=>{
+  $(id).addEventListener("input",()=>{ if(id==="tipo")refreshM2(); if(document.querySelector(".res-big")){const r=calc();if(r)render(r);} });
+});
+</script>
+</body>
+</html>
