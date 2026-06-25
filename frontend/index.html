@@ -61,7 +61,7 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .geo-wrap{position:relative}
 #sugs{position:absolute;top:100%;left:0;right:0;background:var(--panel2);border:1px solid var(--azul);border-radius:0 0 10px 10px;z-index:30;max-height:210px;overflow:auto;display:none}
 #sugs div{padding:10px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--linea);color:#C3C8D8}
-#sugs div:hover{background:rgba(27,56,232,.18);color:#fff}
+#sugs div:hover,#sugs div.act{background:rgba(27,56,232,.18);color:#fff}
 #map{height:200px;border-radius:12px;margin-top:10px;border:1px solid var(--linea);background:var(--panel2)}
 .geo-meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--gris)}
 .geo-meta .coord{color:var(--ok)}
@@ -111,10 +111,28 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .desglose h4{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gris);margin-bottom:9px}
 .dl{display:flex;justify-content:space-between;font-size:12px;padding:3.5px 0;border-bottom:1px dashed rgba(255,255,255,.05)}
 .dl:last-child{border-bottom:none}.dl span:first-child{color:var(--gris)}.dl span:last-child{font-family:var(--mono)}
+.dl.calib span:last-child{color:var(--ok)}
 .res-empty{color:var(--gris2);font-size:14px;text-align:center;padding:48px 10px;line-height:1.6}
 .res-empty .ic{font-family:var(--mono);font-size:30px;color:var(--linea);display:block;margin-bottom:12px}
 .fade{animation:fade .35s ease}@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .disc{font-size:11px;color:var(--gris2);margin-top:16px;line-height:1.5}
+
+/* ===== captura de lead (gate) ===== */
+.lock-target{transition:filter .25s}
+.locked .lock-target{filter:blur(7px);pointer-events:none;user-select:none}
+.lead{margin-top:18px;background:rgba(27,56,232,.08);border:1px solid var(--azul);border-radius:13px;padding:18px;animation:fade .35s ease}
+.lead h4{font-family:var(--syne);font-weight:800;font-size:17px;margin-bottom:5px}
+.lead p{font-size:12.5px;color:#C3C8D8;line-height:1.5;margin-bottom:14px}
+.lead .field{margin-bottom:10px}
+.lead .consent{display:flex;gap:8px;align-items:flex-start;margin:4px 0 12px;cursor:pointer}
+.lead .consent input{width:auto;margin-top:3px}
+.lead .consent span{font-size:11px;color:var(--gris);line-height:1.45}
+.lead-ok{margin-top:14px;background:rgba(55,211,155,.08);border:1px solid var(--ok);border-radius:12px;padding:14px 16px;font-size:13px;color:#BFF3DF;line-height:1.5;animation:fade .35s ease}
+.lead-ok b{color:#fff}
+.wa-cta{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;width:100%;
+  background:#25D366;color:#062b14;border:none;border-radius:11px;font-family:var(--syne);font-weight:800;font-size:14px;
+  letter-spacing:.02em;padding:13px;cursor:pointer;text-transform:uppercase;text-decoration:none;transition:transform .12s}
+.wa-cta:hover{transform:translateY(-2px)}
 
 /* comparables */
 .comp-sec{margin:14px 0 36px}
@@ -171,7 +189,7 @@ footer .logo{font-size:15px;margin-bottom:10px}
 
       <span class="sec-label">Ubicación</span>
       <div class="field geo-wrap">
-        <label>Dirección <span class="req">*</span> <span class="hint">/ el mapa fija el punto exacto</span></label>
+        <label>Dirección <span class="req">*</span> <span class="hint">/ elegí una opción de la lista o tocá el mapa</span></label>
         <input id="dir" type="text" autocomplete="off" placeholder="Ej: Lavardén 429, Acassuso">
         <div id="sugs"></div>
       </div>
@@ -260,7 +278,7 @@ footer .logo{font-size:15px;margin-bottom:10px}
     </div>
 
     <!-- ============ RESULT ============ -->
-    <div class="card card-res">
+    <div class="card card-res" id="resCard">
       <div class="card-head"><span class="n">02</span><span class="card-title">Resultado</span></div>
       <div id="result">
         <div class="res-empty"><span class="ic">[ ]</span>Completá los datos, fijá la dirección en el mapa y tocá <b style="color:var(--gris)">Tasar</b>.</div>
@@ -279,14 +297,14 @@ footer .logo{font-size:15px;margin-bottom:10px}
 
   <section class="steps">
     <div class="step"><div class="num">[ 01 ]</div><h3>Geolocalizás</h3><p>La dirección se fija con un punto exacto en el mapa. El sistema resuelve la micro-zona y su valor de m².</p></div>
-    <div class="step"><div class="num">[ 02 ]</div><h3>El motor calcula</h3><p>Homogeneiza superficie, deprecia por estado y antigüedad (Ross-Heidecke), pondera atributos y castiga la oferta.</p></div>
-    <div class="step"><div class="num">[ 03 ]</div><h3>Comparables + rango</h3><p>Trae 6 propiedades reales del barrio y devuelve publicación sugerida, rango competitivo y cierre probable.</p></div>
+    <div class="step"><div class="num">[ 02 ]</div><h3>El motor calcula</h3><p>Homogeneiza superficie, deprecia por estado y antigüedad, pondera atributos y castiga la oferta.</p></div>
+    <div class="step"><div class="num">[ 03 ]</div><h3>Comparables + rango</h3><p>Trae 6 propiedades reales del barrio, recalibra el valor con la oferta de la cuadra y devuelve publicación, rango competitivo y cierre probable.</p></div>
   </section>
 
   <section class="phase">
     <span class="tag">Fase 2 · backend</span>
     <h3>Comparables en vivo y análisis de fotos</h3>
-    <p>La búsqueda real de comparables y el análisis de fotos con IA corren en el <b>backend de DV</b> (no se pueden hacer dentro de esta página por restricciones de los portales y de la API de visión). Apuntá la constante <code>API_BASE</code> del script al servicio desplegado (FastAPI + Apify + Claude visión) y la sección de comparables y el botón de fotos pasan a datos en vivo. Mientras tanto, el tasador funciona con las tablas de referencia y el modo demo muestra comparables reales de ejemplo.</p>
+    <p>La búsqueda real de comparables, el análisis de fotos con IA y la captura de leads corren en el <b>backend de DV</b> (no se pueden hacer dentro de esta página por restricciones de los portales y de la API de visión). Apuntá la constante <code>API_BASE</code> del script al servicio desplegado (FastAPI + Apify + Claude visión) y la sección de comparables, el botón de fotos y el guardado de leads pasan a datos en vivo. Mientras tanto, el tasador funciona con las tablas de referencia y el modo demo muestra comparables reales de ejemplo.</p>
   </section>
 
   <footer>
@@ -299,25 +317,33 @@ footer .logo{font-size:15px;margin-bottom:10px}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 /* ===================================================================
-   MOTOR DE TASACIÓN · DV — v2
-   API_BASE: URL del backend de Fase 2 (comparables + fotos). Vacío = modo demo.
+   MOTOR DE TASACIÓN · DV — v4 (captura de lead + recalibración + flywheel)
+   Configurá las 3 constantes de abajo:
+     API_BASE      URL del backend (comparables, fotos, /lead). Vacío = modo demo.
+     LEAD_ENDPOINT Fallback si NO hay backend: URL Formspree/Make/Sheets que recibe el lead.
+     DV_WHATSAPP   Número DV en formato internacional sin + ni espacios (ej "5491100000000")
+                   para el botón "Hablar con un asesor". Vacío = se oculta.
    =================================================================== */
-const API_BASE = ""; // ej: "https://dv-tasador.onrender.com"
+const API_BASE      = ""; // ej: "https://dv-tasador.onrender.com"
+const LEAD_ENDPOINT = ""; // ej: "https://formspree.io/f/xxxx"  (solo se usa si API_BASE está vacío)
+const DV_WHATSAPP   = ""; // ej: "5491131110000"
+const NOMINATIM_EMAIL = "digitalviewstrategies@gmail.com"; // identificación ante Nominatim (su política lo pide)
 
 const PARAMS = {
-  // USD/m² de referencia por micro-zona (oferta deptos, 2025/26). CALIBRAR con cierres reales DV.
-  // Corredor entre Panamericana y el Río, de Puerto Madero a Puertos del Lago.
+  // USD/m² de referencia por micro-zona (oferta deptos). Recalibrado 2026-06-25 con Zonaprop ZP Index
+  // (GBA Norte oct-25, verificado del PDF oficial + CABA ene-26). Las zonas sin dato público verificable
+  // conservan su estimación previa y dependen de los comparables en vivo. CALIBRAR con cierres reales DV.
   zonas: {
-    "Puerto Madero":5800,"Retiro":2600,"Recoleta":2459,"Barrio Norte":2500,"Palermo":2631,
-    "Las Cañitas":2700,"Belgrano":2526,"Colegiales":2334,"Núñez":2569,"Saavedra":1850,
-    "Vicente López (centro)":2700,"Olivos":2900,"La Lucila":3300,"Florida":2100,"Florida Oeste":1750,
-    "Munro":1850,"Carapachay":1700,"Villa Martelli":1600,"Villa Adelina":1900,
+    "Puerto Madero":6000,"Retiro":1900,"Recoleta":2600,"Barrio Norte":2500,"Palermo":3300,
+    "Las Cañitas":3450,"Belgrano":2900,"Colegiales":2334,"Núñez":3100,"Saavedra":2000,
+    "Vicente López (centro)":3570,"Olivos":3140,"La Lucila":3700,"Florida":2100,"Florida Oeste":1750,
+    "Munro":2120,"Carapachay":1700,"Villa Martelli":2350,"Villa Adelina":1900,
     "San Isidro (casco)":2900,"Acassuso":2900,"Martínez":2500,"Beccar":2000,"Boulogne":1700,
     "Las Lomas de San Isidro":2600,"La Horqueta":2300,
-    "San Fernando":1500,"Victoria":1700,"Virreyes":1300,
-    "Tigre (centro)":1900,"Rincón de Milberg":2100,"Nordelta":2500,"Benavídez":1700,
+    "San Fernando":2150,"Victoria":1700,"Virreyes":1300,
+    "Tigre (centro)":2400,"Rincón de Milberg":2100,"Nordelta":2500,"Benavídez":1700,
     "General Pacheco":1700,"Don Torcuato":1700,"El Talar":1450,"Dique Luján / Villa La Ñata":1800,
-    "Belén de Escobar":1400,"Ingeniero Maschwitz":1600,"Puertos del Lago":2400,"El Cantón":2200,
+    "Belén de Escobar":1900,"Ingeniero Maschwitz":1830,"Puertos del Lago":2400,"El Cantón":2200,
     "Otra (Zona Norte)":2000
   },
   // alias para matchear el geocoder con las claves de arriba
@@ -339,13 +365,14 @@ const PARAMS = {
   // amenities chicos: la oferta de mercado YA incluye casas con pileta/parrilla, no se premia de nuevo
   amenities:{ cochera:0.005, pileta:0.012, parrilla:0.004 },
   barrioCerradoCoef:1.04,
-  cierre:{ min:0.88, max:0.93 }                           // cierre = 7-12% por debajo del valor de publicación
+  cierre:{ min:0.88, max:0.93 },                          // cierre = 7-12% por debajo del valor de publicación
+  compWeight:0.40                                         // peso de los comparables al recalibrar (tabla 60% / comparables 40%)
 };
 
 const $=id=>document.getElementById(id);
 const fmt=n=>"$"+Math.round(n).toLocaleString("es-AR");
 const r5=n=>Math.round(n/5000)*5000;
-let LAT=null,LON=null,fotos=[];
+let LAT=null,LON=null,fotos=[],captured=false,lastResult=null;
 
 /* ---- poblar selects ---- */
 const zsel=$("zona");
@@ -389,33 +416,50 @@ function matchZona(txt){
 }
 async function reverseZona(lat,lon){
   try{
-    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&accept-language=es`);
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&accept-language=es&email=${encodeURIComponent(NOMINATIM_EMAIL)}`);
     const d=await r.json(); const a=d.address||{};
     const cand=[a.suburb,a.neighbourhood,a.quarter,a.city_district,a.town,a.village,a.city,a.municipality].filter(Boolean).join(" ");
     const z=matchZona(cand);
     $("zonaName").textContent=cand||"—";
-    if(z){zsel.value=z;refreshM2();} 
+    if(z){zsel.value=z;refreshM2();}
   }catch(e){ $("zonaName").textContent="(elegí la micro-zona manualmente)"; }
 }
-/* autocomplete de dirección */
-let tmr;
+/* autocomplete de dirección — NO mueve el mapa hasta que elegís una opción (click o Enter) */
+let tmr,sugList=[],sugIdx=-1;
+function renderSugs(items){
+  const box=$("sugs"); box.innerHTML=""; sugList=items; sugIdx=-1;
+  if(!items.length){box.style.display="none";return;}
+  items.forEach((it,i)=>{const el=document.createElement("div");el.textContent=it.display_name;
+    el.onclick=()=>aplicarSug(i); box.appendChild(el);});
+  box.style.display="block";
+}
+function aplicarSug(i){
+  const it=sugList[i]; if(!it)return;
+  $("dir").value=it.display_name; $("sugs").style.display="none";
+  setPoint(parseFloat(it.lat),parseFloat(it.lon),false);
+  $("zonaName").textContent=it.display_name.split(",").slice(0,3).join(", ");
+  const z=matchZona(it.display_name);
+  if(z){zsel.value=z;refreshM2();} else reverseZona(parseFloat(it.lat),parseFloat(it.lon));
+}
 $("dir").addEventListener("input",function(){
   clearTimeout(tmr); const q=this.value.trim();
   if(q.length<3){$("sugs").style.display="none";return;}
   tmr=setTimeout(async()=>{
     try{
-      const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=ar&limit=6&addressdetails=1&accept-language=es&viewbox=-58.85,-34.85,-58.25,-34.15&q=${encodeURIComponent(q)}`);
-      const d=await r.json(); const box=$("sugs"); box.innerHTML="";
-      if(!d.length){box.style.display="none";return;}
-      const aplicar=it=>{setPoint(parseFloat(it.lat),parseFloat(it.lon),false);
-        $("zonaName").textContent=it.display_name.split(",").slice(0,3).join(", ");
-        const z=matchZona(it.display_name); if(z){zsel.value=z;refreshM2();} else reverseZona(parseFloat(it.lat),parseFloat(it.lon));};
-      aplicar(d[0]);                       // marca solo el mejor resultado en el mapa
-      d.forEach(it=>{const el=document.createElement("div");el.textContent=it.display_name;
-        el.onclick=()=>{$("dir").value=it.display_name;box.style.display="none";aplicar(it);}; box.appendChild(el);});
-      box.style.display="block";
+      const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=ar&limit=6&addressdetails=1&accept-language=es&email=${encodeURIComponent(NOMINATIM_EMAIL)}&viewbox=-58.85,-34.85,-58.25,-34.15&q=${encodeURIComponent(q)}`);
+      const d=await r.json();
+      if(!d.length){$("sugs").style.display="none";return;}
+      renderSugs(d);   // solo lista; el mapa se fija cuando elegís
     }catch(e){$("geostatus").textContent="Autocompletado no disponible — fijá el punto tocando el mapa";}
-  },350);
+  },400);
+});
+$("dir").addEventListener("keydown",e=>{
+  const box=$("sugs"); if(box.style.display==="none"||!sugList.length)return;
+  if(e.key==="ArrowDown"||e.key==="ArrowUp"){
+    e.preventDefault(); sugIdx=(sugIdx+(e.key==="ArrowDown"?1:-1)+sugList.length)%sugList.length;
+    [...box.children].forEach((c,i)=>c.classList.toggle("act",i===sugIdx));
+  } else if(e.key==="Enter"){ e.preventDefault(); aplicarSug(sugIdx>=0?sugIdx:0); }
+  else if(e.key==="Escape"){ box.style.display="none"; }
 });
 document.addEventListener("click",e=>{ if(!e.target.closest(".geo-wrap"))$("sugs").style.display="none"; });
 
@@ -439,7 +483,7 @@ $("analizar").addEventListener("click",async()=>{
     if(d.estado||d.categoria){
       if(d.estado)$("estado").value=d.estado; if(d.categoria)$("cat").value=d.categoria;
       out.innerHTML=`<b>Lectura IA:</b> estado <b>${d.estado||"—"}</b> · categoría <b>${d.categoria||"—"}</b>. ${d.observaciones||""}`;
-      if(document.querySelector(".res-big")){const rr=calc();if(rr)render(rr);}
+      if(lastResult){const rr=calc();if(rr){lastResult=rr;render(rr);}}
     } else {
       out.innerHTML="El backend respondió sin lectura. Revisá que <b>ANTHROPIC_API_KEY</b> esté cargada en Render y que el deploy esté arriba."+(d.error?" ("+d.error+")":"");
     }
@@ -465,16 +509,33 @@ function calc(){
   const m2aj=base*cA*cE*cC*cAtr*cBC;
   const est=supH*m2aj, pub=r5(est);
   return {z,tipo,base,supH,cA,cE,cC,cAtr,cBC,bc,m2aj,est,pub,
-    compL:r5(pub*0.97),compH:r5(pub*1.03),ciL:r5(est*PARAMS.cierre.min),ciH:r5(est*PARAMS.cierre.max),m2i:pub/supH};
+    compL:r5(pub*0.97),compH:r5(pub*1.03),ciL:r5(est*PARAMS.cierre.min),ciH:r5(est*PARAMS.cierre.max),m2i:pub/supH,
+    compM2:null,estAjust:null,pubAjust:null};   // se completan al recalibrar con comparables
+}
+/* recalibra el valor con el promedio USD/m² de los comparables (roadmap #2) */
+function recalibrar(r,promedioM2){
+  if(!promedioM2||!r)return r;
+  const w=PARAMS.compWeight;
+  const m2Blend=Math.round(r.m2aj*(1-w)+promedioM2*w);
+  r.compM2=promedioM2;
+  r.estAjust=r.supH*m2Blend;
+  r.pubAjust=r5(r.estAjust);
+  r.ciLAjust=r5(r.estAjust*PARAMS.cierre.min);
+  r.ciHAjust=r5(r.estAjust*PARAMS.cierre.max);
+  return r;
 }
 function render(r){
+  const headline = r.pubAjust || r.pub;
+  const ciL = r.ciLAjust || r.ciL, ciH = r.ciHAjust || r.ciH;
+  const calibRow = r.compM2 ? `<div class="dl calib"><span>↻ Recalibrado con comparables (${r.compM2.toLocaleString("es-AR")} USD/m²)</span><span>${fmt(r.estAjust)}</span></div>` : "";
   $("result").innerHTML=`<div class="fade">
-    <div class="res-eyebrow">Valor de publicación sugerido</div>
-    <div class="res-big"><span class="cur">USD</span>${Math.round(r.pub).toLocaleString("es-AR")}</div>
+    <div class="res-eyebrow">Valor de publicación sugerido${r.pubAjust?" · recalibrado":""}</div>
+    <div class="res-big"><span class="cur">USD</span>${Math.round(headline).toLocaleString("es-AR")}</div>
+    <div class="lock-target">
     <div class="res-line"></div>
     <div class="res-grid">
       <div class="res-cell"><div class="k">Rango competitivo</div><div class="v az">${fmt(r.compL)} – ${fmt(r.compH)}</div></div>
-      <div class="res-cell"><div class="k">Cierre probable</div><div class="v li">${fmt(r.ciL)} – ${fmt(r.ciH)}</div></div>
+      <div class="res-cell"><div class="k">Cierre probable</div><div class="v li">${fmt(ciL)} – ${fmt(ciH)}</div></div>
       <div class="res-cell"><div class="k">USD/m² implícito</div><div class="v">${Math.round(r.m2i).toLocaleString("es-AR")}</div></div>
       <div class="res-cell"><div class="k">Sup. homogeneizada</div><div class="v">${r.supH.toLocaleString("es-AR")} m²</div></div>
     </div>
@@ -485,8 +546,70 @@ function render(r){
       <div class="dl"><span>= USD/m² ajustado</span><span>${Math.round(r.m2aj).toLocaleString("es-AR")}</span></div>
       <div class="dl"><span>× Sup. homogeneizada</span><span>${r.supH.toLocaleString("es-AR")} m²</span></div>
       <div class="dl"><span>= Valor de publicación estimado</span><span>${fmt(r.est)}</span></div>
+      ${calibRow}
     </div>
-    <p class="disc">Orientativo. La oferta publicada suele estar 5–15% sobre el cierre real. No reemplaza la tasación de un corredor matriculado.</p></div>`;
+    <p class="disc">Orientativo. La oferta publicada suele estar 5–15% sobre el cierre real. No reemplaza la tasación de un corredor matriculado.</p>
+    </div>
+    <div id="gate"></div>
+  </div>`;
+  applyGate();
+}
+/* ---- captura de lead (gate) ---- */
+function applyGate(){
+  const card=$("resCard"), gate=$("gate");
+  if(!gate) return;
+  if(captured){ card.classList.remove("locked"); gate.innerHTML=leadOkHtml(); return; }
+  card.classList.add("locked");
+  gate.innerHTML=`<div class="lead">
+    <h4>Mirá el informe completo</h4>
+    <p>Dejanos tus datos y te mandamos el <b>rango completo, los 6 comparables y el informe</b> por WhatsApp. Sin compromiso.</p>
+    <div class="field"><input id="ldNombre" type="text" placeholder="Nombre y apellido"></div>
+    <div class="field"><input id="ldWa" type="tel" inputmode="numeric" placeholder="WhatsApp (ej 11 3111 0000)"></div>
+    <div class="field"><input id="ldMail" type="email" placeholder="Email"></div>
+    <label class="consent"><input id="ldOk" type="checkbox"><span>Acepto que DV me contacte por esta tasación. Es orientativa y no reemplaza la tasación de un corredor matriculado.</span></label>
+    <button class="btn" id="ldSend" style="margin-top:4px">Ver mi informe completo</button>
+    <div class="form-warn" id="ldWarn">Completá nombre, un WhatsApp válido, email y el consentimiento.</div>
+  </div>`;
+  $("ldSend").addEventListener("click",enviarLead);
+}
+function leadOkHtml(){
+  const wa = DV_WHATSAPP ? `<a class="wa-cta" target="_blank" href="https://wa.me/${DV_WHATSAPP}?text=${encodeURIComponent("Hola DV, acabo de tasar mi propiedad en "+(lastResult?lastResult.z:"Zona Norte")+" y quiero avanzar.")}">Hablar con un asesor de DV</a>` : "";
+  return `<div class="lead-ok"><b>¡Listo!</b> Te contactamos a la brevedad con el informe completo. Mientras, abajo tenés los 6 comparables del barrio.${wa?"<br>":""}${wa}</div>`;
+}
+function digits(s){return (s||"").replace(/\D/g,"");}
+async function enviarLead(){
+  const nombre=$("ldNombre").value.trim(), wa=digits($("ldWa").value), mail=$("ldMail").value.trim(), ok=$("ldOk").checked;
+  const mailOk=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail);
+  if(!nombre||wa.length<8||!mailOk||!ok){ $("ldWarn").style.display="block"; return; }
+  $("ldWarn").style.display="none"; $("ldSend").textContent="Enviando…"; $("ldSend").disabled=true;
+  const payload={
+    lead:{nombre, whatsapp:wa, email:mail, origen:"tasador-web", fecha:new Date().toISOString()},
+    tasacion: lastResult ? {
+      zona:lastResult.z, tipologia:lastResult.tipo, lat:LAT, lon:LON,
+      cubierta:+$("cub").value||0, descubierta:+$("desc").value||0, lote:+$("lote").value||0,
+      ambientes:+$("amb").value||0, dormitorios:+$("dorm").value||0, banos:+$("ban").value||0,
+      antiguedad:$("antig").value, estado:$("estado").value, categoria:$("cat").value,
+      barrioCerrado:lastResult.bc,
+      usd_m2_base:lastResult.base, usd_m2_ajustado:Math.round(lastResult.m2aj),
+      publicacion:lastResult.pubAjust||lastResult.pub,
+      cierre_min:lastResult.ciLAjust||lastResult.ciL, cierre_max:lastResult.ciHAjust||lastResult.ciH,
+      comparables_usd_m2:lastResult.compM2
+    } : null
+  };
+  try{ await postLead(payload); }catch(e){ /* no bloquear al usuario si falla el guardado */ }
+  captured=true; applyGate();
+}
+async function postLead(payload){
+  if(API_BASE){
+    return fetch(API_BASE+"/lead",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});
+  }
+  if(LEAD_ENDPOINT){
+    // Formspree y similares aceptan un POST plano; mandamos el lead aplanado
+    return fetch(LEAD_ENDPOINT,{method:"POST",headers:{"content-type":"application/json",accept:"application/json"},
+      body:JSON.stringify(Object.assign({},payload.lead,{tasacion:JSON.stringify(payload.tasacion)}))});
+  }
+  // sin destino configurado: dejamos rastro en consola para no perder el lead en pruebas
+  console.log("[DV lead] (sin API_BASE/LEAD_ENDPOINT configurado)", payload);
 }
 
 /* comparables reales de ejemplo (Barrio Parque Aguirre · relevados 08/06/2026) */
@@ -517,19 +640,27 @@ async function buscarComparables(r){
     const q=new URLSearchParams({lat:LAT,lon:LON,tipologia:$("tipo").value,cubierta:$("cub").value,amb:$("amb").value});
     const res=await fetch(API_BASE+"/comparables?"+q.toString()); const d=await res.json();
     const list=(d.comparables||[]).slice(0,6);
-    if(list.length) renderComps(list,false);
-    else renderComps(DEMO,true);   // backend arriba pero sin resultados (revisá actores de Apify)
+    if(list.length){
+      // normalizar al formato visual + recalibrar el valor con el promedio USD/m²
+      renderComps(list.map(c=>({
+        portal:c.portal, dir:c.dir, meta:`${c.cubierta||"?"} m² cub · ${c.amb||"?"} amb · ${c.dist_km} km`,
+        price:c.precio?("US$ "+Number(c.precio).toLocaleString("es-AR")):"s/precio",
+        m2:c.usd_m2?(c.usd_m2.toLocaleString("es-AR")+" USD/m²"):"s/m²",
+        sim:c.similitud?("sim. "+c.similitud+"%"):"", link:c.link||"#"
+      })),false);
+      if(d.promedio_usd_m2 && lastResult){ recalibrar(lastResult,d.promedio_usd_m2); render(lastResult); }
+    } else renderComps(DEMO,true);   // backend arriba pero sin resultados (revisá actores de Apify)
   }catch(e){ renderComps(DEMO,true); }
 }
 
 $("tasar").addEventListener("click",()=>{
   if(!valid()){ $("warn").style.display="block"; return; }
   $("warn").style.display="none";
-  const r=calc(); if(!r)return; render(r); buscarComparables(r);
+  const r=calc(); if(!r)return; lastResult=r; render(r); buscarComparables(r);
   document.querySelector(".comp-sec").scrollIntoView({behavior:"smooth",block:"start"});
 });
 ["zona","tipo","cub","desc","lote","amb","dorm","ban","antig","estado","cat","coch","pile","parr"].forEach(id=>{
-  $(id).addEventListener("input",()=>{ if(id==="tipo")refreshM2(); if(document.querySelector(".res-big")){const r=calc();if(r)render(r);} });
+  $(id).addEventListener("input",()=>{ if(id==="tipo")refreshM2(); if(lastResult){const r=calc();if(r){lastResult=r;render(r);}} });
 });
 </script>
 </body>

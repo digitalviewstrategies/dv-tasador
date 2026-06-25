@@ -1,0 +1,16 @@
+# Python / backend
+__pycache__/
+*.pyc
+.venv/
+venv/
+backend/.env
+.env
+
+# Datos de leads (respaldo local — no versionar)
+backend/data/
+data/
+*.jsonl
+
+# Sistema
+.DS_Store
+Thumbs.db

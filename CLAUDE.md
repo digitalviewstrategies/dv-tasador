@@ -26,10 +26,14 @@ Tasador automático de propiedades de **Zona Norte GBA** (de Puerto Madero a Pue
   - Variables: `APIFY_TOKEN`, `ANTHROPIC_API_KEY`, `ACTOR_ZONAPROP`, `ACTOR_MERCADOLIBRE` (ver `backend/.env.example`).
 - Deploy: frontend en **GitHub Pages** (workflow en `.github/workflows/`), backend en **Render** (blueprint `render.yaml`, igual que el pipeline de Radar Inmobiliario).
 
-## Estado actual (v3)
+## Estado actual (v4)
 - Motor **calibrado** con un cierre real (casa La Lucila, Díaz Vélez al 500, 191 m², publicación USD 480.000). El tasador devuelve ~485.000 para ese caso (antes daba 570.000).
-- Geolocalizador con autocompletado que marca solo el mejor resultado en el mapa.
+- **Captura de lead implementada (roadmap #1):** al tasar se muestra el valor de publicación como teaser y el resto (rango, cierre, desglose, comparables) queda detrás de un gate que pide nombre + WhatsApp + mail. Al dejar los datos se postea a `POST /lead` (o a `LEAD_ENDPOINT` si no hay backend) con el lead + la tasación completa (flywheel, roadmap #5).
+- **Comparables recalibran el valor (roadmap #2):** cuando el backend devuelve `promedio_usd_m2`, el valor se reblendea (tabla 60% / comparables 40%, `PARAMS.compWeight`) y se muestra "recalibrado".
+- Geolocalizador: el autocompletado **ya no mueve el mapa en cada tecla**; el punto se fija al elegir una opción (click / Enter / flechas). Nominatim identificado con `email`.
 - Comparables y análisis de fotos: la UI está lista pero **esperan el backend desplegado** (sin él, modo demo / mensajes de configuración).
+- Constantes a configurar arriba del `<script>`: `API_BASE`, `LEAD_ENDPOINT`, `DV_WHATSAPP`, `NOMINATIM_EMAIL`.
+- Scaffolding de deploy creado: `backend/.env.example`, `.github/workflows/deploy-pages.yml`, `.gitignore`.
 
 ## Decisiones y aprendizajes clave (no repetir errores)
 1. **Bases separadas casa vs depto.** No derivar casas con un factor sobre el valor de deptos: las casas cotizan distinto por m². Usar `PARAMS.casaBaseOverride` por barrio, anclado con cierres reales. `factorCasaDefault` (0.72) es solo placeholder para barrios sin dato.
